@@ -1,11 +1,15 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 
 const app = express();
+
+// Enable CORS
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 4000;
+// Serve static files (index.html)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // In-memory fruits (kept as before)
 let fruits = [
@@ -18,11 +22,12 @@ let fruits = [
 ];
 
 // Routes
+// Get the list of fruits
 app.get('/api/fruits', (req, res) => {
   res.json(fruits);
 });
 
-// Decrement stock when adding to cart (no auth / no DB)
+// Decrement stock when adding to cart
 app.post('/api/cart/add/:id', (req, res) => {
   const id = Number(req.params.id);
   const fruit = fruits.find(f => f.id === id);
@@ -37,6 +42,21 @@ app.get('/api/state', (req, res) => {
   res.json({ fruits });
 });
 
+// Serve the index.html on the root path
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 404 handler for any other routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+// Port for server to listen on (use environment variable or fallback to 4000)
+const PORT = process.env.PORT || 4000;
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
+
